@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using Microsoft.Extensions.Configuration;
 using SystemAudioAnalyzer.Services;
 
 namespace SystemAudioAnalyzer
@@ -8,15 +9,25 @@ namespace SystemAudioAnalyzer
     {
         private AudioRecorder _recorder;
         private OpenRouterService _apiService;
-        // TODO: Replace with your actual API key or load from config
-        private const string ApiKey = "YOUR_OPENROUTER_API_KEY"; 
 
         public MainWindow()
         {
             InitializeComponent();
+
+            var builder = new ConfigurationBuilder()
+                .AddUserSecrets<MainWindow>();
+            var configuration = builder.Build();
+
+            string apiKey = configuration["OpenRouterApiKey"] ?? string.Empty;
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                MessageBox.Show("API Key not found. Please configure 'OpenRouterApiKey' in User Secrets.");
+            }
+
             _recorder = new AudioRecorder();
             _recorder.AudioChunkReady += OnAudioChunkReady;
-            _apiService = new OpenRouterService(ApiKey);
+            _apiService = new OpenRouterService(apiKey);
         }
 
         private async void OnAudioChunkReady(object? sender, string filePath)

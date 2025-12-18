@@ -11,7 +11,7 @@ namespace SystemAudioAnalyzer.Services
         private WaveFileWriter? _writer;
         private readonly string _outputFolder;
         private string? _currentFilePath;
-        private Timer? _chunkTimer;
+        private System.Timers.Timer? _chunkTimer;
         private bool _isRecording;
         private readonly object _lock = new object();
 
@@ -38,7 +38,7 @@ namespace SystemAudioAnalyzer.Services
             _capture.StartRecording();
             _isRecording = true;
 
-            _chunkTimer = new Timer(5000); // 5 seconds chunks
+            _chunkTimer = new System.Timers.Timer(5000); // 5 seconds chunks
             _chunkTimer.Elapsed += OnChunkTimerElapsed;
             _chunkTimer.Start();
         }
@@ -69,7 +69,7 @@ namespace SystemAudioAnalyzer.Services
         private void StartNewChunk()
         {
             if (_capture == null) return;
-            
+
             string fileName = $"chunk_{DateTime.Now:yyyyMMdd_HHmmss_fff}.wav";
             _currentFilePath = Path.Combine(_outputFolder, fileName);
             _writer = new WaveFileWriter(_currentFilePath, _capture.WaveFormat);
