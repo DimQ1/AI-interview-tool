@@ -38,7 +38,7 @@ namespace SystemAudioAnalyzer.Services
             _capture.StartRecording();
             _isRecording = true;
 
-            _chunkTimer = new System.Timers.Timer(5000); // 5 seconds chunks
+            _chunkTimer = new System.Timers.Timer(30000); // 5 seconds chunks
             _chunkTimer.Elapsed += OnChunkTimerElapsed;
             _chunkTimer.Start();
         }

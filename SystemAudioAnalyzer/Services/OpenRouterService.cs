@@ -89,7 +89,7 @@ namespace SystemAudioAnalyzer.Services
                 model = "openai/gpt-3.5-turbo",
                 messages = new[]
                 {
-                    new { role = "system", content = "Analyze the text. Extract questions asked by the speaker. For each question, provide a short answer. Return the result in JSON format: { \"questions\": [\"q1\", \"q2\"], \"answers\": [\"a1\", \"a2\"] } where a1 corresponds to q1." },
+                    new { role = "system", content = "You are developer on interview. Analyze the text. Extract questions asked by the speaker. For each question, provide a short answer 3-5 sentences. Return the result in JSON format: { \"questions\": [\"q1\", \"q2\"], \"answers\": [\"a1\", \"a2\"] } where a1 corresponds to q1." },
                     new { role = "user", content = text }
                 },
                 response_format = new { type = "json_object" }

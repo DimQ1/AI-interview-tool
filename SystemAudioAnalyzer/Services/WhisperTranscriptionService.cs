@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Whisper.net;
-using Whisper.net.Ggml;
+using Whisper.net.LibraryLoader;
 
 namespace SystemAudioAnalyzer.Services
 {
@@ -12,7 +12,7 @@ namespace SystemAudioAnalyzer.Services
         private WhisperFactory? _whisperFactory;
         private WhisperProcessor? _processor;
         private readonly string _modelPath;
-        private const string ModelUrl = "https://huggingface.co/ggerganov/whisper.cpp/blob/main/ggml-large-v3-turbo-q5_0.bin";
+        private const string ModelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin";
 
         public WhisperTranscriptionService()
         {
@@ -25,6 +25,9 @@ namespace SystemAudioAnalyzer.Services
             {
                 await DownloadModelAsync();
             }
+
+            // Optional set the order of the runtimes:
+            RuntimeOptions.RuntimeLibraryOrder = [RuntimeLibrary.Cuda, RuntimeLibrary.Cpu];
 
             _whisperFactory = WhisperFactory.FromPath(_modelPath);
             _processor = _whisperFactory.CreateBuilder()
@@ -41,6 +44,7 @@ namespace SystemAudioAnalyzer.Services
             using var stream = await response.Content.ReadAsStreamAsync();
             using var fileStream = new FileStream(_modelPath, FileMode.Create, FileAccess.Write, FileShare.None);
             await stream.CopyToAsync(fileStream);
+            await fileStream.FlushAsync();
         }
 
         public async Task<string> TranscribeAsync(string filePath)
