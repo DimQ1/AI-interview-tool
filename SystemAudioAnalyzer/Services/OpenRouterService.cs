@@ -50,6 +50,7 @@ namespace SystemAudioAnalyzer.Services
             {
                 // Fallback or error handling
                 var error = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"Transcription API Error: {response.StatusCode} - {error}");
                 throw new Exception($"Transcription failed: {response.StatusCode} - {error}");
             }
 

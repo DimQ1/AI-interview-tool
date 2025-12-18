@@ -66,6 +66,7 @@ namespace SystemAudioAnalyzer
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error processing audio chunk: {ex}");
                 Dispatcher.Invoke(() =>
                 {
                     txtStatus.Text = $"Error: {ex.Message}";
