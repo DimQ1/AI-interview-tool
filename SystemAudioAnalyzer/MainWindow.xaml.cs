@@ -9,6 +9,7 @@ namespace SystemAudioAnalyzer
     {
         private AudioRecorder _recorder;
         private OpenRouterService _apiService;
+        private WhisperTranscriptionService _transcriptionService;
 
         public MainWindow()
         {
@@ -28,14 +29,18 @@ namespace SystemAudioAnalyzer
             _recorder = new AudioRecorder();
             _recorder.AudioChunkReady += OnAudioChunkReady;
             _apiService = new OpenRouterService(apiKey);
+            _transcriptionService = new WhisperTranscriptionService();
+            
+            // Initialize Whisper in background
+            _ = _transcriptionService.InitializeAsync();
         }
 
         private async void OnAudioChunkReady(object? sender, string filePath)
         {
             try
             {
-                // 1. Transcribe
-                var transcription = await _apiService.TranscribeAudioAsync(filePath);
+                // 1. Transcribe (Local Whisper)
+                var transcription = await _transcriptionService.TranscribeAsync(filePath);
                 if (string.IsNullOrWhiteSpace(transcription)) return;
 
                 Dispatcher.Invoke(() =>
@@ -43,7 +48,7 @@ namespace SystemAudioAnalyzer
                     txtTranscription.Text += transcription + "\n";
                 });
 
-                // 2. Translate
+                // 2. Translate (OpenRouter)
                 var translation = await _apiService.TranslateAsync(transcription);
                 Dispatcher.Invoke(() =>
                 {

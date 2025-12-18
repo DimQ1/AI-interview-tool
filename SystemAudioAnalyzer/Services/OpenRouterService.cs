@@ -35,7 +35,7 @@ namespace SystemAudioAnalyzer.Services
             // If this fails, one would need to use a specific provider or model that supports audio input.
             // For this implementation, we assume a standard OpenAI-compatible endpoint or similar.
             // If OpenRouter doesn't support this, we might need to use 'openai/whisper' via a different path or provider.
-            
+
             using var content = new MultipartFormDataContent();
             using var fileStream = File.OpenRead(filePath);
             using var fileContent = new StreamContent(fileStream);
@@ -45,7 +45,7 @@ namespace SystemAudioAnalyzer.Services
 
             // Try standard endpoint
             var response = await _httpClient.PostAsync($"{BaseUrl}/audio/transcriptions", content);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 // Fallback or error handling
@@ -96,8 +96,8 @@ namespace SystemAudioAnalyzer.Services
             };
 
             var jsonResponse = await SendChatCompletionAsync(requestBody);
-            
-            try 
+
+            try
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
                 var root = doc.RootElement;
@@ -120,10 +120,10 @@ namespace SystemAudioAnalyzer.Services
                     }
                 }
 
-                return new AnalysisResult 
-                { 
-                    Questions = questions.ToString(), 
-                    Answers = answers.ToString() 
+                return new AnalysisResult
+                {
+                    Questions = questions.ToString(),
+                    Answers = answers.ToString()
                 };
             }
             catch
@@ -138,11 +138,11 @@ namespace SystemAudioAnalyzer.Services
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{BaseUrl}/chat/completions", content);
-            
+
             if (!response.IsSuccessStatusCode)
             {
-                 var error = await response.Content.ReadAsStringAsync();
-                 throw new Exception($"API call failed: {response.StatusCode} - {error}");
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"API call failed: {response.StatusCode} - {error}");
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
