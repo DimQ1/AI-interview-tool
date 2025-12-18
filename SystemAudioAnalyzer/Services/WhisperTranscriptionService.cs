@@ -83,13 +83,19 @@ namespace SystemAudioAnalyzer.Services
                 
                 // Whisper.net processes float[] or short[]. 
                 // We have bytes (16-bit PCM).
-                // Let's convert to short[]
+                // Let's convert to short[] then float[]
                 var bytes = memStream.ToArray();
                 var samples = new short[bytes.Length / 2];
                 Buffer.BlockCopy(bytes, 0, samples, 0, bytes.Length);
                 
+                var floatSamples = new float[samples.Length];
+                for (int i = 0; i < samples.Length; i++)
+                {
+                    floatSamples[i] = samples[i] / 32768f;
+                }
+                
                 var text = "";
-                await foreach (var segment in _processor.ProcessAsync(samples))
+                await foreach (var segment in _processor.ProcessAsync(floatSamples))
                 {
                     text += segment.Text + " ";
                 }
