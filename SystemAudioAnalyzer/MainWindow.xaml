@@ -5,8 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SystemAudioAnalyzer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="AI Interview Tool" Height="600" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+            <Button x:Name="btnStart" Content="Start Recording" Click="btnStart_Click" Padding="10,5" Margin="0,0,10,0"/>
+            <Button x:Name="btnStop" Content="Stop Recording" Click="btnStop_Click" Padding="10,5" IsEnabled="False"/>
+            <TextBlock x:Name="txtStatus" Text="Ready" VerticalAlignment="Center" Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <GroupBox Header="Transcription" Grid.Row="1" Grid.Column="0" Margin="0,0,5,5">
+            <ScrollViewer>
+                <TextBlock x:Name="txtTranscription" TextWrapping="Wrap" />
+            </ScrollViewer>
+        </GroupBox>
+
+        <GroupBox Header="Translation (RU)" Grid.Row="1" Grid.Column="1" Margin="5,0,0,5">
+            <ScrollViewer>
+                <TextBlock x:Name="txtTranslation" TextWrapping="Wrap" />
+            </ScrollViewer>
+        </GroupBox>
+
+        <GroupBox Header="Questions" Grid.Row="2" Grid.Column="0" Margin="0,5,5,0">
+            <ScrollViewer>
+                <TextBlock x:Name="txtQuestions" TextWrapping="Wrap" Foreground="Blue"/>
+            </ScrollViewer>
+        </GroupBox>
+
+        <GroupBox Header="Answers" Grid.Row="2" Grid.Column="1" Margin="5,5,0,0">
+            <ScrollViewer>
+                <TextBlock x:Name="txtAnswers" TextWrapping="Wrap" Foreground="Green"/>
+            </ScrollViewer>
+        </GroupBox>
     </Grid>
 </Window>

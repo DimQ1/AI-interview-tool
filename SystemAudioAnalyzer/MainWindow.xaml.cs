@@ -20,4 +20,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    private void btnStart_Click(object sender, RoutedEventArgs e)
+    {
+        btnStart.IsEnabled = false;
+        btnStop.IsEnabled = true;
+        txtStatus.Text = "Recording...";
+    }
+
+    private void btnStop_Click(object sender, RoutedEventArgs e)
+    {
+        btnStart.IsEnabled = true;
+        btnStop.IsEnabled = false;
+        txtStatus.Text = "Stopped";
+    }
 }
