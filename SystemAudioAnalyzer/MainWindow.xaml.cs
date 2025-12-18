@@ -30,7 +30,7 @@ namespace SystemAudioAnalyzer
             _recorder.AudioChunkReady += OnAudioChunkReady;
             _apiService = new OpenRouterService(apiKey);
             _transcriptionService = new WhisperTranscriptionService();
-            
+
             // Initialize Whisper in background
             _ = _transcriptionService.InitializeAsync();
         }
