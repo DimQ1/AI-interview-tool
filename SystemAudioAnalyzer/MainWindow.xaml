@@ -10,41 +10,57 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
             <Button x:Name="btnStart" Content="Start Recording" Click="btnStart_Click" Padding="10,5" Margin="0,0,10,0"/>
             <Button x:Name="btnStop" Content="Stop Recording" Click="btnStop_Click" Padding="10,5" IsEnabled="False"/>
             <TextBlock x:Name="txtStatus" Text="Ready" VerticalAlignment="Center" Margin="10,0,0,0"/>
         </StackPanel>
 
-        <GroupBox Header="Transcription" Grid.Row="1" Grid.Column="0" Margin="0,0,5,5">
-            <ScrollViewer>
-                <TextBlock x:Name="txtTranscription" TextWrapping="Wrap" />
-            </ScrollViewer>
-        </GroupBox>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <GroupBox Header="Translation (RU)" Grid.Row="1" Grid.Column="1" Margin="5,0,0,5">
-            <ScrollViewer>
-                <TextBlock x:Name="txtTranslation" TextWrapping="Wrap" />
-            </ScrollViewer>
-        </GroupBox>
+            <!-- Left Side: Transcription and Translation -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-        <GroupBox Header="Questions" Grid.Row="2" Grid.Column="0" Margin="0,5,5,0">
-            <ScrollViewer>
-                <TextBlock x:Name="txtQuestions" TextWrapping="Wrap" Foreground="Blue"/>
-            </ScrollViewer>
-        </GroupBox>
+                <GroupBox Header="Transcription" Grid.Row="0">
+                    <ScrollViewer>
+                        <TextBlock x:Name="txtTranscription" TextWrapping="Wrap" />
+                    </ScrollViewer>
+                </GroupBox>
 
-        <GroupBox Header="Answers" Grid.Row="2" Grid.Column="1" Margin="5,5,0,0">
-            <ScrollViewer>
-                <TextBlock x:Name="txtAnswers" TextWrapping="Wrap" Foreground="Green"/>
-            </ScrollViewer>
-        </GroupBox>
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LightGray" ResizeBehavior="PreviousAndNext"/>
+
+                <GroupBox Header="Translation (RU)" Grid.Row="2">
+                    <ScrollViewer>
+                        <TextBlock x:Name="txtTranslation" TextWrapping="Wrap" />
+                    </ScrollViewer>
+                </GroupBox>
+            </Grid>
+
+            <!-- Vertical Splitter -->
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LightGray" ResizeBehavior="PreviousAndNext"/>
+
+            <!-- Right Side: Questions and Answers -->
+            <GroupBox Header="Analysis (Q&amp;A)" Grid.Column="2">
+                <RichTextBox x:Name="rtbAnalysis" IsReadOnly="True" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run Text="Waiting for analysis..." Foreground="Gray"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
+            </GroupBox>
+        </Grid>
     </Grid>
 </Window>

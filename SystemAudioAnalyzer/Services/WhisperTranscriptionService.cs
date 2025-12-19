@@ -27,7 +27,7 @@ namespace SystemAudioAnalyzer.Services
             }
 
             // Optional set the order of the runtimes:
-            RuntimeOptions.RuntimeLibraryOrder = [RuntimeLibrary.Cuda, RuntimeLibrary.Cpu];
+            //RuntimeOptions.RuntimeLibraryOrder = [RuntimeLibrary.Cuda];
 
             _whisperFactory = WhisperFactory.FromPath(_modelPath);
             _processor = _whisperFactory.CreateBuilder()
@@ -58,7 +58,6 @@ namespace SystemAudioAnalyzer.Services
 
             try
             {
-                using var fileStream = File.OpenRead(filePath);
                 // Whisper.net expects 16kHz mono PCM. 
                 // Our AudioRecorder saves as whatever the system loopback is (usually 48kHz stereo).
                 // We need to resample.

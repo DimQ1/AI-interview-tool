@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,8 +11,8 @@ namespace SystemAudioAnalyzer.Services
 {
     public class AnalysisResult
     {
-        public string Questions { get; set; } = string.Empty;
-        public string Answers { get; set; } = string.Empty;
+        public List<string> Questions { get; set; } = new List<string>();
+        public List<string> Answers { get; set; } = new List<string>();
     }
 
     public class OpenRouterService
@@ -69,7 +70,7 @@ namespace SystemAudioAnalyzer.Services
 
             var requestBody = new
             {
-                model = "openai/gpt-3.5-turbo",
+                model = "google/gemini-3-flash-preview",
                 messages = new[]
                 {
                     new { role = "system", content = $"Translate the following text to {targetLanguage}." },
@@ -86,7 +87,7 @@ namespace SystemAudioAnalyzer.Services
 
             var requestBody = new
             {
-                model = "openai/gpt-3.5-turbo",
+                model = "google/gemini-3-flash-preview",
                 messages = new[]
                 {
                     new { role = "system", content = "You are developer on interview. Analyze the text. Extract questions asked by the speaker. For each question, provide a short answer 3-5 sentences. Return the result in JSON format: { \"questions\": [\"q1\", \"q2\"], \"answers\": [\"a1\", \"a2\"] } where a1 corresponds to q1." },
@@ -101,14 +102,13 @@ namespace SystemAudioAnalyzer.Services
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
                 var root = doc.RootElement;
-                var questions = new StringBuilder();
-                var answers = new StringBuilder();
+                var result = new AnalysisResult();
 
                 if (root.TryGetProperty("questions", out var qArray))
                 {
                     foreach (var q in qArray.EnumerateArray())
                     {
-                        questions.AppendLine(q.GetString());
+                        result.Questions.Add(q.GetString() ?? string.Empty);
                     }
                 }
 
@@ -116,20 +116,16 @@ namespace SystemAudioAnalyzer.Services
                 {
                     foreach (var a in aArray.EnumerateArray())
                     {
-                        answers.AppendLine(a.GetString());
+                        result.Answers.Add(a.GetString() ?? string.Empty);
                     }
                 }
 
-                return new AnalysisResult
-                {
-                    Questions = questions.ToString(),
-                    Answers = answers.ToString()
-                };
+                return result;
             }
             catch
             {
                 // Fallback if JSON parsing fails
-                return new AnalysisResult { Questions = "Error parsing analysis", Answers = "" };
+                return new AnalysisResult();
             }
         }
 

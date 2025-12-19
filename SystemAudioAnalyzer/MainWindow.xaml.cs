@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Media;
 using Microsoft.Extensions.Configuration;
 using SystemAudioAnalyzer.Services;
 
@@ -10,6 +13,9 @@ namespace SystemAudioAnalyzer
         private AudioRecorder _recorder;
         private OpenRouterService _apiService;
         private WhisperTranscriptionService _transcriptionService;
+
+        private readonly Queue<string> _transcriptionHistory = new Queue<string>();
+        private readonly HashSet<string> _displayedQuestions = new HashSet<string>();
 
         public MainWindow()
         {
@@ -33,6 +39,9 @@ namespace SystemAudioAnalyzer
 
             // Initialize Whisper in background
             _ = _transcriptionService.InitializeAsync();
+            
+            // Clear initial text in RichTextBox
+            rtbAnalysis.Document.Blocks.Clear();
         }
 
         private async void OnAudioChunkReady(object? sender, string filePath)
@@ -55,17 +64,52 @@ namespace SystemAudioAnalyzer
                     txtTranslation.Text += translation + "\n";
                 });
 
+                // Prepare context for analysis (Current + 3 previous)
+                string analysisContext;
+                lock (_transcriptionHistory)
+                {
+                    if (_transcriptionHistory.Count > 0)
+                    {
+                        analysisContext = string.Join(" ", _transcriptionHistory) + " " + transcription;
+                    }
+                    else
+                    {
+                        analysisContext = transcription;
+                    }
+
+                    _transcriptionHistory.Enqueue(transcription);
+                    while (_transcriptionHistory.Count > 3)
+                    {
+                        _transcriptionHistory.Dequeue();
+                    }
+                }
+
                 // 3. Analyze
-                var analysis = await _apiService.AnalyzeAsync(transcription);
+                var analysis = await _apiService.AnalyzeAsync(analysisContext);
                 Dispatcher.Invoke(() =>
                 {
-                    if (!string.IsNullOrWhiteSpace(analysis.Questions))
+                    var paragraph = new Paragraph();
+                    bool hasContent = false;
+
+                    for (int i = 0; i < analysis.Questions.Count; i++)
                     {
-                        txtQuestions.Text += analysis.Questions + "\n";
+                        string q = analysis.Questions[i];
+                        string a = (i < analysis.Answers.Count) ? analysis.Answers[i] : string.Empty;
+
+                        if (!_displayedQuestions.Contains(q))
+                        {
+                            _displayedQuestions.Add(q);
+                            
+                            paragraph.Inlines.Add(new Run(q + "\n") { Foreground = Brushes.Blue });
+                            paragraph.Inlines.Add(new Run(a + "\n") { Foreground = Brushes.Black });
+                            hasContent = true;
+                        }
                     }
-                    if (!string.IsNullOrWhiteSpace(analysis.Answers))
+
+                    if (hasContent)
                     {
-                        txtAnswers.Text += analysis.Answers + "\n";
+                        rtbAnalysis.Document.Blocks.Add(paragraph);
+                        rtbAnalysis.ScrollToEnd();
                     }
                 });
             }
