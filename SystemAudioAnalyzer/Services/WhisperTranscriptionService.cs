@@ -101,9 +101,12 @@ namespace SystemAudioAnalyzer.Services
                 }
 
                 var text = "";
-                await foreach (var segment in _processor.ProcessAsync(floatSamples))
+                if (floatSamples.Length > 0)
                 {
-                    text += segment.Text + " ";
+                    await foreach (var segment in _processor.ProcessAsync(floatSamples))
+                    {
+                        text += segment.Text + " ";
+                    }
                 }
 
                 return text.Trim();

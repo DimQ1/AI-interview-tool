@@ -14,6 +14,7 @@ namespace SystemAudioAnalyzer
         private AudioRecorder _recorder;
         private OpenRouterService _apiService;
         private WhisperTranscriptionService _transcriptionService;
+        private AppSettings _appSettings;
 
         private readonly Queue<string> _transcriptionHistory = new Queue<string>();
         private readonly HashSet<string> _displayedQuestions = new HashSet<string>();
@@ -23,20 +24,30 @@ namespace SystemAudioAnalyzer
         {
             InitializeComponent();
 
-            var builder = new ConfigurationBuilder()
-                .AddUserSecrets<MainWindow>();
-            var configuration = builder.Build();
+            // Load settings
+            _appSettings = SettingsManager.Load();
 
-            string apiKey = configuration["OpenRouterApiKey"] ?? string.Empty;
-
-            if (string.IsNullOrEmpty(apiKey))
+            // Fallback to UserSecrets if ApiKey is missing in settings (migration path)
+            if (string.IsNullOrEmpty(_appSettings.ApiKey))
             {
-                MessageBox.Show("API Key not found. Please configure 'OpenRouterApiKey' in User Secrets.");
+                var builder = new ConfigurationBuilder().AddUserSecrets<MainWindow>();
+                var configuration = builder.Build();
+                string secretApiKey = configuration["OpenRouterApiKey"] ?? string.Empty;
+                if (!string.IsNullOrEmpty(secretApiKey))
+                {
+                    _appSettings.ApiKey = secretApiKey;
+                    SettingsManager.Save(_appSettings);
+                }
+            }
+
+            if (string.IsNullOrEmpty(_appSettings.ApiKey))
+            {
+                MessageBox.Show("API Key not found. Please configure it in Settings.");
             }
 
             _recorder = new AudioRecorder();
             _recorder.AudioChunkReady += OnAudioChunkReady;
-            _apiService = new OpenRouterService(apiKey);
+            _apiService = new OpenRouterService(_appSettings);
             _transcriptionService = new WhisperTranscriptionService();
 
             // Initialize Whisper in background
@@ -44,6 +55,18 @@ namespace SystemAudioAnalyzer
             
             // Clear initial text in RichTextBox
             rtbAnalysis.Document.Blocks.Clear();
+        }
+
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow(_appSettings);
+            settingsWindow.Owner = this;
+            if (settingsWindow.ShowDialog() == true)
+            {
+                _appSettings = settingsWindow.Settings;
+                SettingsManager.Save(_appSettings);
+                _apiService.UpdateSettings(_appSettings);
+            }
         }
 
         private async void OnAudioChunkReady(object? sender, string filePath)

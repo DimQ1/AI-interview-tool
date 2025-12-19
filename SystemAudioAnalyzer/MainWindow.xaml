@@ -14,7 +14,8 @@
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
             <Button x:Name="btnStart" Content="Start Recording" Click="btnStart_Click" Padding="10,5" Margin="0,0,10,0"/>
-            <Button x:Name="btnStop" Content="Stop Recording" Click="btnStop_Click" Padding="10,5" IsEnabled="False"/>
+            <Button x:Name="btnStop" Content="Stop Recording" Click="btnStop_Click" Padding="10,5" IsEnabled="False" Margin="0,0,10,0"/>
+            <Button x:Name="btnSettings" Content="Settings" Click="btnSettings_Click" Padding="10,5"/>
             <TextBlock x:Name="txtStatus" Text="Ready" VerticalAlignment="Center" Margin="10,0,0,0"/>
         </StackPanel>
 

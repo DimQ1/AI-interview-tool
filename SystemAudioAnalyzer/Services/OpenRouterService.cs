@@ -18,16 +18,27 @@ namespace SystemAudioAnalyzer.Services
     public class OpenRouterService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private AppSettings _settings;
         private const string BaseUrl = "https://openrouter.ai/api/v1";
 
-        public OpenRouterService(string apiKey)
+        public OpenRouterService(AppSettings settings)
         {
-            _apiKey = apiKey;
+            _settings = settings;
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            UpdateAuthorizationHeader();
             _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://github.com/your-repo");
             _httpClient.DefaultRequestHeaders.Add("X-Title", "SystemAudioAnalyzer");
+        }
+
+        public void UpdateSettings(AppSettings settings)
+        {
+            _settings = settings;
+            UpdateAuthorizationHeader();
+        }
+
+        private void UpdateAuthorizationHeader()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
         }
 
         public async Task<string> TranscribeAudioAsync(string filePath)
@@ -64,16 +75,16 @@ namespace SystemAudioAnalyzer.Services
             return string.Empty;
         }
 
-        public async Task<string> TranslateAsync(string text, string targetLanguage = "Russian")
+        public async Task<string> TranslateAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return string.Empty;
 
             var requestBody = new
             {
-                model = "google/gemini-3-flash-preview",
+                model = _settings.Model,
                 messages = new[]
                 {
-                    new { role = "system", content = $"Translate the following text to {targetLanguage}." },
+                    new { role = "system", content = _settings.TranslationPrompt },
                     new { role = "user", content = text }
                 }
             };
@@ -87,10 +98,10 @@ namespace SystemAudioAnalyzer.Services
 
             var requestBody = new
             {
-                model = "google/gemini-3-flash-preview",
+                model = _settings.Model,
                 messages = new[]
                 {
-                    new { role = "system", content = "You are developer on interview. Analyze the text. Extract questions asked by the speaker. For each question, provide a short answer 3-5 sentences. Return the result in JSON format: { \"questions\": [\"q1\", \"q2\"], \"answers\": [\"a1\", \"a2\"] } where a1 corresponds to q1." },
+                    new { role = "system", content = _settings.AnalysisPrompt },
                     new { role = "user", content = text }
                 },
                 response_format = new { type = "json_object" }
