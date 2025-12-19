@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Extensions.Configuration;
 using SystemAudioAnalyzer.Services;
@@ -16,6 +17,7 @@ namespace SystemAudioAnalyzer
 
         private readonly Queue<string> _transcriptionHistory = new Queue<string>();
         private readonly HashSet<string> _displayedQuestions = new HashSet<string>();
+        private bool _isAutoScrollPaused = false;
 
         public MainWindow()
         {
@@ -109,7 +111,10 @@ namespace SystemAudioAnalyzer
                     if (hasContent)
                     {
                         rtbAnalysis.Document.Blocks.Add(paragraph);
-                        rtbAnalysis.ScrollToEnd();
+                        if (!_isAutoScrollPaused)
+                        {
+                            rtbAnalysis.ScrollToEnd();
+                        }
                     }
                 });
             }
@@ -121,6 +126,17 @@ namespace SystemAudioAnalyzer
                     txtStatus.Text = $"Error: {ex.Message}";
                 });
             }
+        }
+
+        private void rtbAnalysis_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _isAutoScrollPaused = true;
+        }
+
+        private void rtbAnalysis_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _isAutoScrollPaused = false;
+            rtbAnalysis.ScrollToEnd();
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)

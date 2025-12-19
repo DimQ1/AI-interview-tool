@@ -53,7 +53,8 @@
 
             <!-- Right Side: Questions and Answers -->
             <GroupBox Header="Analysis (Q&amp;A)" Grid.Column="2">
-                <RichTextBox x:Name="rtbAnalysis" IsReadOnly="True" VerticalScrollBarVisibility="Auto">
+                <RichTextBox x:Name="rtbAnalysis" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                             MouseEnter="rtbAnalysis_MouseEnter" MouseLeave="rtbAnalysis_MouseLeave">
                     <FlowDocument>
                         <Paragraph>
                             <Run Text="Waiting for analysis..." Foreground="Gray"/>

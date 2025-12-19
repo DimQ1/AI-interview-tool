@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Whisper.net;
 using Whisper.net.LibraryLoader;
@@ -13,6 +14,7 @@ namespace SystemAudioAnalyzer.Services
         private WhisperProcessor? _processor;
         private readonly string _modelPath;
         private const string ModelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin";
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public WhisperTranscriptionService()
         {
@@ -49,15 +51,16 @@ namespace SystemAudioAnalyzer.Services
 
         public async Task<string> TranscribeAsync(string filePath)
         {
-            if (_processor == null)
-            {
-                await InitializeAsync();
-            }
-
-            if (_processor == null) return string.Empty;
-
+            await _semaphore.WaitAsync();
             try
             {
+                if (_processor == null)
+                {
+                    await InitializeAsync();
+                }
+
+                if (_processor == null) return string.Empty;
+
                 // Whisper.net expects 16kHz mono PCM. 
                 // Our AudioRecorder saves as whatever the system loopback is (usually 48kHz stereo).
                 // We need to resample.
@@ -108,7 +111,12 @@ namespace SystemAudioAnalyzer.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Whisper Transcription Error: {ex}");
+                // Return empty string on error to keep app running
                 return string.Empty;
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
