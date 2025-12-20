@@ -12,35 +12,76 @@ namespace SystemAudioAnalyzer.Services
     {
         private WhisperFactory? _whisperFactory;
         private WhisperProcessor? _processor;
-        private readonly string _modelPath;
-        private const string ModelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin";
+        private string _modelPath;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public WhisperTranscriptionService()
         {
-            _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ggml-large-v3-turbo-q5_0.bin");
+            // Initial path, will be updated in InitializeAsync based on settings if needed, 
+            // but ideally we pass settings to this service. 
+            // However, since the service is instantiated in MainWindow and settings are loaded there,
+            // we should probably allow updating the model path or reading it from settings.
+            // For now, let's assume the file name comes from settings.
+            
+            // We'll rely on InitializeAsync to set up the correct path based on current settings.
         }
 
         public async Task InitializeAsync()
         {
+            // Reload settings to get the latest model choice
+            var settings = SettingsManager.Load();
+            string modelFilename = settings.WhisperModelFilename;
+            
+            // Fallback if empty
+            if (string.IsNullOrEmpty(modelFilename))
+            {
+                modelFilename = "ggml-large-v3-turbo-q5_0.bin";
+            }
+
+            _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, modelFilename);
+
             if (!File.Exists(_modelPath))
             {
-                await DownloadModelAsync();
+                // If the configured model doesn't exist, we can't proceed.
+                // In a real app, we might trigger a download or notify the user.
+                // For now, we'll just return and let TranscribeAsync fail gracefully or try to download default.
+                
+                // Let's try to download if it's the default one, otherwise fail.
+                if (modelFilename == "ggml-large-v3-turbo-q5_0.bin")
+                {
+                     await DownloadModelAsync();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Selected Whisper model not found: {_modelPath}");
+                    return;
+                }
             }
 
             // Optional set the order of the runtimes:
             //RuntimeOptions.RuntimeLibraryOrder = [RuntimeLibrary.Cuda];
 
-            _whisperFactory = WhisperFactory.FromPath(_modelPath);
-            _processor = _whisperFactory.CreateBuilder()
-                .WithLanguage("auto")
-                .Build();
+            try 
+            {
+                _whisperFactory = WhisperFactory.FromPath(_modelPath);
+                _processor = _whisperFactory.CreateBuilder()
+                    .WithLanguage("auto")
+                    .Build();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing Whisper factory: {ex.Message}");
+            }
         }
 
         private async Task DownloadModelAsync()
         {
+            // This is a fallback for the default model if it's missing.
+            // The UI now handles downloading other models.
+            string url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin";
+            
             using var httpClient = new HttpClient();
-            using var response = await httpClient.GetAsync(ModelUrl, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
             using var stream = await response.Content.ReadAsStreamAsync();

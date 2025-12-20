@@ -1,9 +1,10 @@
 <Window x:Class="SystemAudioAnalyzer.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Settings" Height="450" Width="600" WindowStartupLocation="CenterOwner">
+        Title="Settings" Height="600" Width="600" WindowStartupLocation="CenterOwner">
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -21,15 +22,37 @@
             <TextBox x:Name="txtModel" Margin="0,5,0,0"/>
         </StackPanel>
 
-        <GroupBox Header="Analysis System Prompt" Grid.Row="2" Margin="0,0,0,10">
+        <GroupBox Header="Whisper Model" Grid.Row="2" Margin="0,0,0,10">
+            <StackPanel Margin="5">
+                <TextBlock Text="Select Model to Download/Use:" Margin="0,0,0,5"/>
+                <ComboBox x:Name="cmbWhisperModels" DisplayMemberPath="Name" SelectionChanged="cmbWhisperModels_SelectionChanged" Margin="0,0,0,5"/>
+                
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="Status: " FontWeight="Bold"/>
+                    <TextBlock x:Name="txtModelStatus" Text="Unknown"/>
+                </StackPanel>
+
+                <ProgressBar x:Name="pbDownload" Height="10" Margin="0,0,0,5" Visibility="Collapsed"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnDownloadModel" Content="Download" Click="btnDownloadModel_Click" Margin="0,0,10,0" IsEnabled="False"/>
+                    <Button x:Name="btnUseModel" Content="Set as Active" Click="btnUseModel_Click" IsEnabled="False"/>
+                </StackPanel>
+                
+                <TextBlock Text="Active Model:" FontWeight="Bold" Margin="0,10,0,0"/>
+                <TextBlock x:Name="txtActiveModel" Text="None"/>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="Analysis System Prompt" Grid.Row="3" Margin="0,0,0,10">
             <TextBox x:Name="txtAnalysisPrompt" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
         </GroupBox>
 
-        <GroupBox Header="Translation System Prompt" Grid.Row="3" Margin="0,0,0,10">
+        <GroupBox Header="Translation System Prompt" Grid.Row="4" Margin="0,0,0,10">
             <TextBox x:Name="txtTranslationPrompt" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
         </GroupBox>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="btnSave" Content="Save" Click="btnSave_Click" Padding="20,5" Margin="0,0,10,0"/>
             <Button x:Name="btnCancel" Content="Cancel" Click="btnCancel_Click" Padding="20,5"/>
         </StackPanel>
