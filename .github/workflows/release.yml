@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release (e.g. v1.0.0)'
+        required: true
 
 jobs:
   release:
@@ -38,9 +42,32 @@ jobs:
     - name: Compress Release
       run: Compress-Archive -Path ./publish/* -DestinationPath SystemAudioAnalyzer-win-x64.zip
 
+    - name: Create Tag if Manual
+      if: github.event_name == 'workflow_dispatch'
+      shell: bash
+      env:
+        TAG_NAME: ${{ github.event.inputs.tag_name }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        
+        git fetch --tags
+        
+        if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+          echo "Tag $TAG_NAME already exists locally."
+        elif git ls-remote --exit-code --tags origin refs/tags/$TAG_NAME; then
+          echo "Tag $TAG_NAME already exists on remote."
+        else
+          echo "Tag $TAG_NAME does not exist. Creating..."
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+        fi
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
         files: SystemAudioAnalyzer-win-x64.zip
         generate_release_notes: true
       env:
